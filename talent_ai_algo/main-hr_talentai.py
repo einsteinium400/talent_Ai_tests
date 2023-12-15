@@ -3,11 +3,10 @@ import sys
 from avivit_res_talentai.general_algos.Preprocess import *
 import csv
 import numpy as np
-from avivit_res_talentai.statistic_regular_algo.Statistic_dot_product import Statistic_dot_product
-from avivit_res_talentai.statistic_regular_algo.Statistic_list_frequency import Statistic_list_frequency
-from avivit_res_talentai.statistic_regular_algo.Statistic_intersection import Statistic_intersection
-from avivit_res_talentai.statistic_regular_algo.MixedDistance import MixedDistance
+from avivit_res_talentai.talent_ai_algo.talentai_dot_product import Statistic_dot_product
+from avivit_res_talentai.talent_ai_algo.Statistic_intersection_talentai import Statistic_intersection
 
+from avivit_res_talentai.talent_ai_algo.KMeanClusterer_talentai_version import KMeansClusterer_talentai
 # Save the reference to the original sys.stdout
 original_stdout = sys.stdout
 
@@ -23,36 +22,6 @@ output_file = open(output_file_path, 'w')
 
 import numpy as np
 import re
-
-def convert_month_year_to_year(array_list):
-    # Regular expression pattern to match YYYY-MM
-    pattern = re.compile(r'^(\d{4})-(\d{2})$')
-
-    for arr in array_list:
-        # Check if the array has at least 35 elements (to access index 33 and 34)
-        if len(arr) > 34:
-            # Process index 33
-            value_33 = arr[33]
-            if isinstance(value_33, str) and value_33:
-                match_33 = pattern.match(value_33)
-                if match_33:
-                    arr[33] = int(match_33.group(1))
-                else:
-                    arr[33] = ""
-
-            # Process index 34
-            value_34 = arr[34]
-            if isinstance(value_34, str) and value_34:
-                match_34 = pattern.match(value_34)
-                if match_34:
-                    arr[34] = int(match_34.group(1))
-                else:
-                    arr[34] = ""
-
-    return array_list
-
-# Example usage:
-# Create a list of NumPy arrays
 
 
 
@@ -84,12 +53,19 @@ vectors = [np.array(f, dtype=object) for f in csv_data]
 #vectors=convert_month_year_to_year(vectors)
 
 
-hp, k = preProcess(vectors, types_list, Statistic_dot_product, 9, 9)
+hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
 
-print("making model of dot")
-model = KMeansClusterer(num_means=k,
-                        distance=Statistic_dot_product,
-                        repeats=16,
+# make categoric vals as numeric freqs
+for vec in vectors:
+    for i in range(len(types_list)):
+        if (types_list[i]=="categoric"):
+
+            vec[i]=hp["frequencies"][str(i)][vec[i]]
+
+print("making model of intersection")
+model = KMeansClusterer_talentai(num_means=k,
+                        distance=Statistic_intersection,
+                        repeats=15,
                         type_of_fields=types_list,
                         hyper_params=hp)
 # print("before")
@@ -105,7 +81,6 @@ model.calc_distance_between_clusters()
 print("min distance is", model.min_dist)
 print("max distance is", model.max_dist)
 
-
 ##################################################################3
 
 print("######################3making model of dot product")
@@ -113,7 +88,7 @@ print("######################3making model of dot product")
 hp, k = preProcess(vectors, types_list, Statistic_dot_product, 9, 9)
 model = KMeansClusterer(num_means=k,
                         distance=Statistic_dot_product,
-                        repeats=20,
+                        repeats=15,
                         type_of_fields=types_list,
                         hyper_params=hp)
 # print("before")
@@ -132,35 +107,3 @@ model.calc_distance_between_clusters()
 
 exit()
 ##########################################################3
-
-print("######################3making model of intersection")
-
-hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
-model = KMeansClusterer(num_means=k,
-                        distance=Statistic_intersection,
-                        repeats=4,
-                        type_of_fields=types_list,
-                        hyper_params=hp)
-
-model.cluster_vectorspace(vectors)
-
-print("done making model")
-
-#model.calc_min_max_dist(vectors)
-model.calc_distance_between_clusters()
-
-model.get_wcss()
-print("min distance is", model.min_dist)
-print("max distance is", model.max_dist)
-
-# Close the file to ensure changes are saved
-output_file.close()
-
-# print("done making model")
-# model.cluster_vectorspace(vectors)
-# print("finish cluster")
-# model.createClusterJson()
-# print(model._model_json_info)
-# model.calc_min_max_dist(vectors)
-#
-# print("wcss is", model.get_wcss())
