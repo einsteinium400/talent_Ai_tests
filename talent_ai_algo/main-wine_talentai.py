@@ -1,6 +1,7 @@
+import ast
 import sys
 
-from avivit_res_talentai.general_algos.Preprocess_for_hr import *
+from avivit_res_talentai.general_algos.Preprocess_for_wine import *
 import csv
 import numpy as np
 from avivit_res_talentai.talent_ai_algo.talentai_dot_product import Statistic_dot_product
@@ -25,17 +26,14 @@ import re
 
 
 
-types_list = ['categoric', 'categoric', 'categoric', 'categoric', 'numeric',
-              'categoric', 'categoric', 'categoric', 'categoric', 'categoric',
-              'list', 'categoric', 'categoric', 'categoric', 'list', 'list',
-              'categoric', 'categoric', 'categoric', 'numeric', 'categoric',
-              'categoric', 'categoric', 'categoric', 'categoric', 'categoric',
-              'categoric', 'categoric', 'categoric', 'list', 'categoric',
-              'categoric', 'categoric', 'categoric', 'numeric', 'list', 'list', 'list']
+types_list = ['categoric', 'categoric', 'categoric', 'categoric', 'list',
+              'list', 'numeric', 'categoric', 'categoric', 'categoric',
+              'categoric', 'categoric', 'categoric',
+              'categoric', 'categoric', 'categoric', 'list']
 
 i = 0
 
-with open('../datasets/employes_flat_version.csv', 'r', encoding='utf-8') as csvfile:  # employes.csv
+with open('../datasets/wine.txt', 'r', encoding='utf-8') as csvfile:
     # Create a CSV reader object
     csv_data = []
     csvreader = csv.reader(csvfile)
@@ -43,35 +41,31 @@ with open('../datasets/employes_flat_version.csv', 'r', encoding='utf-8') as csv
     # Iterate through each row in the CSV file
 
     for row in csvreader:
-        # print(i)
-        # print(row)
-        # Append each row as a list to the csv_data list
+
         csv_data.append(row)
 
 vectors = [np.array(f, dtype=object) for f in csv_data]
-# model.calc_min_max_dist(vectors)
-#vectors=convert_month_year_to_year(vectors)
 
 
 hp, k = preProcess(vectors, types_list, Statistic_list_frequency, 9, 9)
 
-# make categoric vals as numeric freqs
+# make list vals as numeric freqs
 for vec in vectors:
     for i in range(len(types_list)):
         if (types_list[i]=="categoric"):
 
             vec[i]=hp["frequencies"][str(i)][vec[i]]
-        # this if should be commented out if using one hot vector methods
+        # this if should be comment for one hot vector methods
         if (types_list[i]=="list"):
-            new_lst=[]
             old_lst=ast.literal_eval(vec[i])
             new_lst=[]
             for j in old_lst:
+                #print(hp["list_freq_dict"][i][j])
                 new_lst.append(hp["list_freq_dict"][i][j])
             vec[i]=new_lst
 
+print(vectors)
 vectors = [array.tolist() for array in vectors]
-
 
 print("making model of intersection")
 model = KMeansClusterer_talentai(num_means=k,
@@ -90,7 +84,6 @@ model.calc_distance_between_clusters()
 print("min distance is", model.min_dist)
 print("max distance is", model.max_dist)
 
-exit()
 ##################################################################3
 
 print("######################3making model of dot product")
@@ -98,9 +91,10 @@ print("######################3making model of dot product")
 hp, k = preProcess(vectors, types_list, Statistic_dot_product, 9, 9)
 model = KMeansClusterer(num_means=k,
                         distance=Statistic_dot_product,
-                        repeats=20,
+                        repeats=15,
                         type_of_fields=types_list,
                         hyper_params=hp)
+
 
 model.cluster_vectorspace(vectors)
 

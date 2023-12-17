@@ -94,16 +94,12 @@ class KMeansClusterer:
             frequent_value_list = []
             for ind in range(len(cluster[0])):
 
-                # print("cluster is:", cluster)
                 # if type if categorical, take the most frequent value.
                 # if type is numerical, make avg
                 if self._type_of_fields[ind] == "categoric":
                     counter = Counter(arr[ind] for arr in cluster if len(arr) > ind)
                     frequent_value_list.append(counter.most_common(1)[0][0])
 
-                    # l = max(Counter(cluster[ind]), key=lambda x: Counter(cluster[ind])[x])
-                    # frequent_value_list.append(max(Counter(cluster[ind]), key=lambda x: Counter(cluster[ind])[x]))
-                    # frequent_value_list.append(int(max(set(cluster[x]), key=cluster[x].count)))
                 if self._type_of_fields[ind] == "numeric":
                     # ignore missing values
                     values = [float(arr[ind]) for arr in cluster if arr[ind] != '']
@@ -112,6 +108,8 @@ class KMeansClusterer:
                     frequent_value_list.append(np.mean(result))
 
                 if self._type_of_fields[ind] == "list":
+
+                    # this version is for dot product and intersection
                     # Extract lists from the 6th index of each vector
                     lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
 
@@ -123,6 +121,7 @@ class KMeansClusterer:
                     threshold = len(cluster) / 2
                     most_common_values = [value for value, count in value_counts.items() if count >= threshold]
 
+                    # this version is for list frequency
 
                     # avg_length = self._hyper_parameters["avg_list_len"][ind]
                     # lists_at_second_index = [ast.literal_eval(vector[ind]) for vector in cluster]
@@ -130,18 +129,16 @@ class KMeansClusterer:
                     # counter = Counter(all_values)
                     # most_common_values = [value for value, count in counter.most_common(avg_length)]
 
-                    # add missing vals
+                    # add missing vals is for list frequenct version
                     data = most_common_values  # + (["missing_val"] * (avg_length - len(most_common_values)))
                     str_list = '[' + ', '.join(repr(item) for item in data) + ']'
 
                     frequent_value_list.append(str_list)
 
             centroid = np.array(frequent_value_list)
-            # exit()
-            #            print("new centroid is:", centroid)
+
             return centroid
         else:
-            # print(cluster)
             raise Exception("bad seed")
 
     def get_means(self):
@@ -190,12 +187,6 @@ class KMeansClusterer:
 
         print("min distance is", self.min_dist)
         print("max distance is", self.max_dist)
-        # for u in vecs:
-        #     for v in vecs:
-        #         if not np.equal(u,v):
-        #             dist=self._distance(v, u, self._type_of_fields,self._hyper_parameters )
-        #             self.min_dist=min(dist,self.min_dist)
-        #             self.max_dist=max(dist, self.max_dist)
 
     def wcssCalculate(self):
         # for i in
@@ -225,47 +216,6 @@ class KMeansClusterer:
                                  metric=lambda x, y: self._distance(x, y, self._type_of_fields, self._hyper_parameters)[
                                      0])
         self.silhouette = score
-        # todo: make sure its the best clusters and not the last
-        # ##handling one cluster only
-        # if len(self._clusters_info) < 2:
-        #     self.silhouette = 0
-        #     return
-        #
-        # totalVectors = 0
-        # totalSilhouette = 0
-        # clustersRange = [*range(len(self._clusters_info))]
-        # ##count vectors
-        # for cluster in self._clusters_info:
-        #     totalVectors += len(cluster)
-        #
-        # for index in range(len(self._clusters_info)):
-        #     for vec in self._clusters_info[index]:
-        #         ##silhouette
-        #         sumInCluster = 0
-        #         sumOutCluster = 0
-        #         numOutCluster = 0
-        #
-        #         ##calculate inner cluster distances (ai)
-        #         for otherVector in self._clusters_info[index]:
-        #             distance, results = self._distance(vec, otherVector, self._type_of_fields, self._hyper_parameters)
-        #             sumInCluster += distance
-        #
-        #         ##calculate outer clusters distances (bi)
-        #         clustersRange.remove(index)
-        #         for otherClusters in clustersRange:
-        #             for otherVector in self._clusters_info[otherClusters]:
-        #                 distance, results = self._distance(vec, otherVector, self._type_of_fields,
-        #                                                    self._hyper_parameters)
-        #                 sumOutCluster += distance
-        #                 numOutCluster += 1
-        #         clustersRange.append(index)
-        #         ##summarize silhouette
-        #         ai = sumInCluster / len(self._clusters_info[index])
-        #         bi = sumOutCluster / numOutCluster
-        #         si = (bi - ai) / max(ai, bi)
-        #         totalSilhouette += si
-        #
-        # self.silhouette = totalSilhouette / totalVectors
 
     def metaDataCalculation(self):
         numberOfFeatures = len(self._means[0])
@@ -350,7 +300,7 @@ class KMeansClusterer:
                 except Exception as e:
                     print(e)
                     # print("hello")
-                    exit()
+                   # exit()
                     print("problem generating, trying again")
                     #  exit() #nooo
                     self._means = utils.mean_generator(self._num_means, vectors)
@@ -406,15 +356,12 @@ class KMeansClusterer:
                 for vector in vectors:
                     index, distances = self.classify_vectorspace(vector)
                     clusters[index].append(vector.tolist())
-                # for i in range(len(clusters)):
-                #     print("cluster is",len(clusters[i]))
-                #    print("generating new means")
+
                 try:
                     new_means = list(map(self._centroid, clusters, self._means))
-                # print("new means:", new_means)
                 except Exception as e:
                     # Propagate the exception from function c to function a
-                    print("fuck", e)
+                    print("error", e)
                     raise e
                 # print("new means are:", new_means)
                 # recalculate cluster means by computing the centroid of each cluster

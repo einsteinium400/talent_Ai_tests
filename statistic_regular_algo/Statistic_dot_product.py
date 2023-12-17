@@ -31,8 +31,6 @@ def Statistic_dot_product(u, v, type_values, parameters):
     theta2 = parameters["theta2"]
     theta = parameters["theta"]
     gamma = parameters["gamma"]
-    # print("u is: ", u)
-    # print("v is: ", v)
 
 
 
@@ -78,7 +76,6 @@ def Statistic_dot_product(u, v, type_values, parameters):
         if type_values[i] == "list":
             # create one hot vector
 
-            ####list frequency
             u_list = ast.literal_eval(u[i])
             v_list = ast.literal_eval(v[i])
 

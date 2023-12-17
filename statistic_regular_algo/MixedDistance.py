@@ -3,26 +3,6 @@ import math
 import re
 
 
-def extract_year(input_str):
-    # Regular expression pattern to match YYYY-MM
-    pattern = re.compile(r'^(\d{4})-(\d{2})$')
-
-    # Try to match the pattern
-    match = pattern.match(input_str)
-
-    if match:
-        # Extract the matched year and ignore the month
-        year = match.group(1)
-        return year
-
-
-# Test the function with different inputs
-inputs = ["1994-09", "2021", ""]
-for input_str in inputs:
-    result = extract_year(input_str)
-    print(f"Input: {input_str}, Year: {result}")
-
-
 def MixedDistance(u, v, type_values, parameters):
     distance = 0
     results = []
@@ -37,9 +17,6 @@ def MixedDistance(u, v, type_values, parameters):
             val = (float(u[i]) - float(v[i])) ** 2 if u[i] != '' and v[i] != '' else 0
             if not math.isnan(val):
                 distance += val
-            # results.append(u[i] - v[i])
-
-            # distance += abs(u[i] - v[i])
         if type_values[i] == "list":
 
             u_list = ast.literal_eval(u[i])

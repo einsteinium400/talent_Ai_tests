@@ -47,7 +47,6 @@ def Statistic_intersection(u, v, type_values, parameters):
                 # if attributes are same
                 if u[i] == v[i]:
                     results.append(0)
-                # attributes are not the same - calculate max{f(|vak|), dfr(vi, ui), theta)
                 else:
                     specific_domain_size = parameters["domain sizes"][i]
                     f_v_ak = f_freq(specific_domain_size, theta1, betha, theta2, gamma)
@@ -66,8 +65,7 @@ def Statistic_intersection(u, v, type_values, parameters):
 
         # numberic handle
         if type_values[i] == "numeric":
-            # print()
-            # print(f'i:{i}, u[i]:{u[i]}, v[i]:{v[i]}')
+
             try:
                 if u[i] != '' and v[i] != '':
                     results.append(abs(np.float64(u[i]) - np.float64(v[i])))

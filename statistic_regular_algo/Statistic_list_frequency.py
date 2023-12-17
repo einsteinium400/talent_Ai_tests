@@ -5,8 +5,7 @@ import math
 
 
 def Statistic_list_frequency(u, v, type_values, parameters):
-    # print("started statistic")
-    # print(parameters)
+
     distance = 0
     results = []
 
@@ -23,8 +22,6 @@ def Statistic_list_frequency(u, v, type_values, parameters):
     theta2 = parameters["theta2"]
     theta = parameters["theta"]
     gamma = parameters["gamma"]
-    # print("u is: ", u)
-    # print("v is: ", v)
 
     for i in range(len(v)):
 
@@ -52,8 +49,6 @@ def Statistic_list_frequency(u, v, type_values, parameters):
 
         # numberic handle
         if type_values[i] == "numeric":
-            # print()
-            # print(f'i:{i}, u[i]:{u[i]}, v[i]:{v[i]}')
             try:
                 if u[i] != '' and v[i] != '':
                     results.append(abs(np.float64(u[i]) - np.float64(v[i])))
@@ -104,7 +99,7 @@ def Statistic_list_frequency(u, v, type_values, parameters):
                     distance += pow(max(d_fr, theta, f_v_ak), 2)
             except Exception as e:
                 print(e)
-                print("bad!!!")
+                print("error!!!")
                 print(u_list)
                 print(v_list)
                 print(fr_u)

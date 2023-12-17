@@ -1,6 +1,6 @@
 import sys
 
-from avivit_res_talentai.general_algos.Preprocess import *
+from avivit_res_talentai.general_algos.Preprocess_for_hr import *
 import csv
 import numpy as np
 from avivit_res_talentai.statistic_regular_algo.Statistic_dot_product import Statistic_dot_product
@@ -17,43 +17,12 @@ output_file_path = '../logger_of_dana.txt'
 # Open the file in write mode, this will create the file if it doesn't exist
 output_file = open(output_file_path, 'w')
 
-# Redirect sys.stdout to the file
+# Redirect sys.stdout to the file, comment this out if no need for print
 # sys.stdout = output_file
 
 
 import numpy as np
 import re
-
-def convert_month_year_to_year(array_list):
-    # Regular expression pattern to match YYYY-MM
-    pattern = re.compile(r'^(\d{4})-(\d{2})$')
-
-    for arr in array_list:
-        # Check if the array has at least 35 elements (to access index 33 and 34)
-        if len(arr) > 34:
-            # Process index 33
-            value_33 = arr[33]
-            if isinstance(value_33, str) and value_33:
-                match_33 = pattern.match(value_33)
-                if match_33:
-                    arr[33] = int(match_33.group(1))
-                else:
-                    arr[33] = ""
-
-            # Process index 34
-            value_34 = arr[34]
-            if isinstance(value_34, str) and value_34:
-                match_34 = pattern.match(value_34)
-                if match_34:
-                    arr[34] = int(match_34.group(1))
-                else:
-                    arr[34] = ""
-
-    return array_list
-
-# Example usage:
-# Create a list of NumPy arrays
-
 
 
 types_list = ['categoric', 'categoric', 'categoric', 'categoric', 'numeric',
@@ -74,26 +43,21 @@ with open('../datasets/employes_flat_version.csv', 'r', encoding='utf-8') as csv
     # Iterate through each row in the CSV file
 
     for row in csvreader:
-        # print(i)
-        # print(row)
         # Append each row as a list to the csv_data list
         csv_data.append(row)
 
 vectors = [np.array(f, dtype=object) for f in csv_data]
-# model.calc_min_max_dist(vectors)
-#vectors=convert_month_year_to_year(vectors)
 
 
 hp, k = preProcess(vectors, types_list, Statistic_dot_product, 9, 9)
+# in order to run this you need to comment out the part that refers to one hot vector in kmeansclusterer
 
 print("making model of dot")
 model = KMeansClusterer(num_means=k,
                         distance=Statistic_dot_product,
-                        repeats=16,
+                        repeats=20,
                         type_of_fields=types_list,
                         hyper_params=hp)
-# print("before")
-# model.calc_min_max_dist(vectors)
 
 model.cluster_vectorspace(vectors)
 
@@ -108,17 +72,13 @@ print("max distance is", model.max_dist)
 
 ##################################################################3
 
-print("######################3making model of dot product")
-
-hp, k = preProcess(vectors, types_list, Statistic_dot_product, 9, 9)
+print("######################3making model of Statistic_intersection ")
+hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
 model = KMeansClusterer(num_means=k,
-                        distance=Statistic_dot_product,
+                        distance=Statistic_intersection,
                         repeats=20,
                         type_of_fields=types_list,
                         hyper_params=hp)
-# print("before")
-# model.calc_min_max_dist(vectors)
-
 
 model.cluster_vectorspace(vectors)
 

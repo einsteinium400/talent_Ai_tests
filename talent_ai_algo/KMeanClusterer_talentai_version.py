@@ -94,9 +94,7 @@ class KMeansClusterer_talentai:
             frequent_value_list = []
             for ind in range(len(cluster[0])):
 
-                # print("cluster is:", cluster)
-                # if type if categorical, take the most frequent value.
-                # if type is numerical, make avg
+
                 if self._type_of_fields[ind] == "categoric":
                     values = [float(arr[ind]) for arr in cluster if arr[ind] != '']
 
@@ -104,38 +102,33 @@ class KMeansClusterer_talentai:
                     frequent_value_list.append(np.mean(result))
 
                 if self._type_of_fields[ind] == "numeric":
-                    # ignore missing values
                     values = [float(arr[ind]) for arr in cluster if arr[ind] != '']
 
                     result = np.mean(values) if len(values)>0 else 0
                     frequent_value_list.append(np.mean(result))
 
                 if self._type_of_fields[ind] == "list":
-                    # Extract lists from the 6th index of each vector
-                    lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
+                    ## version for list frequency!!! comment this is using one hot vector
 
-                    # Flatten the lists and count occurrences of each value
-                    flattened_list = [item for sublist in lists_at_ind_index for item in sublist]
-                    value_counts = Counter(flattened_list)
+                    avg_length = self._hyper_parameters["avg_list_len"][ind]
+                    new_lists = [sublist[ind][:avg_length] + [1] * (avg_length - len(sublist[ind])) if len(sublist[ind]) < avg_length else sublist[ind][:avg_length] for sublist in cluster]
+                    averages = [sum(item[i] for item in new_lists) / len(new_lists) for i in
+                                range(len(new_lists[0]))]
+                    ## version for one hot representation, comment out if using intersection/dot
+                    # # Extract lists from the indth index of each vector
+                    # lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
+                    #
+                    # # Flatten the lists and count occurrences of each value
+                    # flattened_list = [item for sublist in lists_at_ind_index for item in sublist]
+                    # value_counts = Counter(flattened_list)
+                    #
+                    # # Find values that appear in at least 50% of the lists
+                    # threshold = len(cluster) / 2
+                    # most_common_values = [value for value, count in value_counts.items() if count >= threshold]
 
-                    # Find values that appear in at least 50% of the lists
-                    threshold = len(cluster) / 2
-                    most_common_values = [value for value, count in value_counts.items() if count >= threshold]
+                    frequent_value_list.append(averages)
 
-
-                    # avg_length = self._hyper_parameters["avg_list_len"][ind]
-                    # lists_at_second_index = [ast.literal_eval(vector[ind]) for vector in cluster]
-                    # all_values = [value for sublist in lists_at_second_index for value in sublist]
-                    # counter = Counter(all_values)
-                    # most_common_values = [value for value, count in counter.most_common(avg_length)]
-
-                    # add missing vals
-                    data = most_common_values  # + (["missing_val"] * (avg_length - len(most_common_values)))
-                    str_list = '[' + ', '.join(repr(item) for item in data) + ']'
-
-                    frequent_value_list.append(str_list)
-
-            centroid = np.array(frequent_value_list)
+            centroid = frequent_value_list
             # exit()
             #            print("new centroid is:", centroid)
             return centroid
@@ -189,13 +182,6 @@ class KMeansClusterer_talentai:
 
         print("min distance is", self.min_dist)
         print("max distance is", self.max_dist)
-        # for u in vecs:
-        #     for v in vecs:
-        #         if not np.equal(u,v):
-        #             dist=self._distance(v, u, self._type_of_fields,self._hyper_parameters )
-        #             self.min_dist=min(dist,self.min_dist)
-        #             self.max_dist=max(dist, self.max_dist)
-
     def wcssCalculate(self):
         # for i in
         wcss = 0
@@ -224,47 +210,6 @@ class KMeansClusterer_talentai:
                                  metric=lambda x, y: self._distance(x, y, self._type_of_fields, self._hyper_parameters)[
                                      0])
         self.silhouette = score
-        # todo: make sure its the best clusters and not the last
-        # ##handling one cluster only
-        # if len(self._clusters_info) < 2:
-        #     self.silhouette = 0
-        #     return
-        #
-        # totalVectors = 0
-        # totalSilhouette = 0
-        # clustersRange = [*range(len(self._clusters_info))]
-        # ##count vectors
-        # for cluster in self._clusters_info:
-        #     totalVectors += len(cluster)
-        #
-        # for index in range(len(self._clusters_info)):
-        #     for vec in self._clusters_info[index]:
-        #         ##silhouette
-        #         sumInCluster = 0
-        #         sumOutCluster = 0
-        #         numOutCluster = 0
-        #
-        #         ##calculate inner cluster distances (ai)
-        #         for otherVector in self._clusters_info[index]:
-        #             distance, results = self._distance(vec, otherVector, self._type_of_fields, self._hyper_parameters)
-        #             sumInCluster += distance
-        #
-        #         ##calculate outer clusters distances (bi)
-        #         clustersRange.remove(index)
-        #         for otherClusters in clustersRange:
-        #             for otherVector in self._clusters_info[otherClusters]:
-        #                 distance, results = self._distance(vec, otherVector, self._type_of_fields,
-        #                                                    self._hyper_parameters)
-        #                 sumOutCluster += distance
-        #                 numOutCluster += 1
-        #         clustersRange.append(index)
-        #         ##summarize silhouette
-        #         ai = sumInCluster / len(self._clusters_info[index])
-        #         bi = sumOutCluster / numOutCluster
-        #         si = (bi - ai) / max(ai, bi)
-        #         totalSilhouette += si
-        #
-        # self.silhouette = totalSilhouette / totalVectors
 
     def metaDataCalculation(self):
         numberOfFeatures = len(self._means[0])
@@ -349,7 +294,7 @@ class KMeansClusterer_talentai:
                 except Exception as e:
                     print(e)
                     # print("hello")
-                    exit()
+                    #exit()
                     print("problem generating, trying again")
                     #  exit() #nooo
                     self._means = utils.mean_generator(self._num_means, vectors)
@@ -404,10 +349,7 @@ class KMeansClusterer_talentai:
 
                 for vector in vectors:
                     index, distances = self.classify_vectorspace(vector)
-                    clusters[index].append(vector.tolist())
-                # for i in range(len(clusters)):
-                #     print("cluster is",len(clusters[i]))
-                #    print("generating new means")
+
                 try:
                     new_means = list(map(self._centroid, clusters, self._means))
                 # print("new means:", new_means)
@@ -449,5 +391,4 @@ class KMeansClusterer_talentai:
             distances.append(cluster_info)
             if best_distance is None or distance < best_distance:
                 best_index, best_distance = index, distance
-
         return best_index, distances

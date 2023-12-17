@@ -47,7 +47,7 @@ def apply_elbow_method(fields_data, vectors, distance_function, triesNumber, _re
     for i in range(1,10):
         print("iteration ", i ,"of elbow")
         model = KMeansClusterer(hyper_params=params, distance=distance_function, num_means=int(i),
-                                type_of_fields=fields_data, repeats=5)
+                                type_of_fields=fields_data, repeats=20)
 
         model.cluster_vectorspace(vectors)
         print("yay!",i, model.get_wcss())
@@ -76,46 +76,21 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
             for elem in vectors:
 
                 output_list = ast.literal_eval(elem[typee])
-                # print(output_list)
-                # exit()
                 for i in output_list:
                     dict_of_lists[typee].add(i)
-                # for i in elem[typee]:
-                #     print(elem[typee])
-                #     print(type(elem[typee]))
-                #     dict_of_lists[typee].add(i)
-            # print(dict_of_lists[typee])
-            # exit()
-            # print(typee)
     for i in dict_of_lists.keys():
         dict_of_lists[i] = list(dict_of_lists[i])
-
-    # print(dict_of_lists.keys())
-    # print(dict_of_lists[10])
-    # print(list(dict_of_lists[10])[1])
-
-    # print(dict_of_lists[15])
-    # exit()
 
     # end of one hot vector preparation
 
     params_dict = dict()
     params_dict["one_hot_vector_prep"] = dict_of_lists
-    # print(params_dict["one_hot_vector_prep"])
-    # exit()
-    #    print("hhh", params_dict["one_hot_vector_prep"][10])
     df = pd.DataFrame(vectors)
     domain_sizes = df.nunique()
 
-    # Apply the custom function to the DataFrame column
-    #  domain_sizes = df['column_mixed_data'].apply(count_unique_elements)
-
-    #  print(domain_sizes)
-    # exit()
 
     params_dict["domain sizes"] = domain_sizes.tolist()
-    # print(params_dict["domain sizes"])
-    # exit()
+
     frequencies_dict = dict()
     minimal_frequencies_dict = dict()
     max_frequencies_dict = dict()
@@ -137,27 +112,18 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
     params_dict["frequencies"] = frequencies_dict
     params_dict["minimum_freq_of_each_attribute"] = minimal_frequencies_dict
     params_dict["theta"] = 0.1
-#    k = apply_elbow_method(type_of_fields, vectors, distance_function, triesNumber, repeats)
-    # activate the genetic algorithm
-    # z = df.nunique().max()  # max domain size
+    #k = apply_elbow_method(type_of_fields, vectors, distance_function, triesNumber, repeats, params_dict)
+
     time = datetime.now()
 
     # calculate the average list length for list frequency method
     list_freq_dict = dict()
-    #  print(type(vectors))
-    #  print(type(vectors[0]))
-    # exit()
+
     for i in range(len(type_of_fields)):
         if (type_of_fields[i] == "list"):
             list_lengths = [len(ast.literal_eval(arr[i])) for arr in vectors]
-            #            print(vectors[0][i][1])
 
             list_freq_dict[i] = math.ceil(np.mean(list_lengths))
-            # print(list_freq_dict)
-            # print(i)
-            # exit()
-            # print(np.mean(list_lengths))
-            # exit()
 
     # calculate average list length
     params_dict["avg_list_len"] = list_freq_dict
@@ -171,35 +137,17 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
                     freq_dict[i][elem] += 1
     params_dict["list_freq_dict"] = freq_dict
 
-    k = 8#apply_elbow_method(type_of_fields, vectors, distance_function, triesNumber, repeats, params_dict)
+    k =3#apply_elbow_method(type_of_fields, vectors, distance_function, triesNumber, repeats, params_dict)
 
-
-    # print("freq dict:", freq_dict)
-    # exit()
-    # print(ast.literal_eval(vectors[0][i]))
-    # Concatenate all lists at the 1st index into a single NumPy array
-    # print()
-    # all_elements = [word for array in ast.literal_eval(vectors) for sublist in ast.literal_eval(array[i]) for word in sublist]
-    # print(all_elements)
-    # exit()
-    # Use Counter to count the frequency of each element
-    # frequency_dict = dict(Counter(all_elements))
-    # freq_dict[i] = frequency_dict
-    #    print("freq_dict", freq_dict)
-    # exit()
-    # exit()
-    # exit()
 
     print("started genetic algorithm")
-    # hr dataset-  ( 4, 13, 0.07, 0.06)
-    theta1, theta2, betha, gamma =  ( 4, 13, 0.07, 0.06)#genetic_algorithm(params_dict, distance_function, k, vectors, type_of_fields, z)
+    theta1, theta2, betha, gamma = ( 13.77254367510333, 48.8138742892078, 0.7298135404401869, 0.6649019127415314)#genetic_algorithm(params_dict, distance_function, k, vectors, type_of_fields, z)
     print(theta1, theta2, betha, gamma)
-    #exit()
     print("GENETIC COMPLETED AND TOOK:", (datetime.now() - time).seconds, "seconds")
 
-    params_dict["theta1"] = theta1  # 3
-    params_dict["theta2"] = theta2  # 10
-    params_dict["betha"] = betha  # 0.05
-    params_dict["gamma"] = gamma  # 0.01
+    params_dict["theta1"] = theta1
+    params_dict["theta2"] = theta2
+    params_dict["betha"] = betha
+    params_dict["gamma"] = gamma
     # print('done genetics: ', params_dict)
     return params_dict, k

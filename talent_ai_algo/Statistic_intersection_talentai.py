@@ -5,9 +5,7 @@ import math
 
 
 def Statistic_intersection(u, v, type_values, parameters):
-    # print("started statistic")
 
-    # print(parameters)
     distance = 0
     results = []
 
@@ -34,9 +32,6 @@ def Statistic_intersection(u, v, type_values, parameters):
     theta2 = parameters["theta2"]
     theta = parameters["theta"]
     gamma = parameters["gamma"]
-    # print("u is: ", u)
-    # print("v is: ", v)
-
 
 
     for i in range(len(v)):
@@ -52,7 +47,7 @@ def Statistic_intersection(u, v, type_values, parameters):
                     specific_domain_size = parameters["domain sizes"][i]
                     f_v_ak = f_freq(specific_domain_size, theta1, betha, theta2, gamma)
                     fr_u = float(u[i])
-                    fr_v = float(v[i]) #parameters["frequencies"][str(i)][str((v[i]))] if v[i]!="" else 1
+                    fr_v = float(v[i])
                     m_fk = parameters["minimum_freq_of_each_attribute"][str(i)]
                     d_fr = (abs(fr_u - fr_v) + m_fk) / max(fr_u, fr_v)
                     results.append(abs(max(d_fr, theta, f_v_ak)))
@@ -66,8 +61,7 @@ def Statistic_intersection(u, v, type_values, parameters):
 
         # numberic handle
         if type_values[i] == "numeric":
-            # print()
-            # print(f'i:{i}, u[i]:{u[i]}, v[i]:{v[i]}')
+
             try:
                 if u[i] != '' and v[i] != '':
                     results.append(abs(np.float64(u[i]) - np.float64(v[i])))
