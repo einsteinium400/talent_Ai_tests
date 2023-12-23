@@ -10,7 +10,7 @@ import model.utils as utils
 from collections import Counter
 from sklearn.metrics import silhouette_score
 
-MAX_ITERATION = 23
+MAX_ITERATION = 25
 
 
 class KMeansClusterer_talentai:
@@ -94,7 +94,6 @@ class KMeansClusterer_talentai:
             frequent_value_list = []
             for ind in range(len(cluster[0])):
 
-
                 if self._type_of_fields[ind] == "categoric":
                     values = [float(arr[ind]) for arr in cluster if arr[ind] != '']
 
@@ -110,23 +109,30 @@ class KMeansClusterer_talentai:
                 if self._type_of_fields[ind] == "list":
                     ## version for list frequency!!! comment this is using one hot vector
 
-                    avg_length = self._hyper_parameters["avg_list_len"][ind]
-                    new_lists = [sublist[ind][:avg_length] + [1] * (avg_length - len(sublist[ind])) if len(sublist[ind]) < avg_length else sublist[ind][:avg_length] for sublist in cluster]
-                    averages = [sum(item[i] for item in new_lists) / len(new_lists) for i in
-                                range(len(new_lists[0]))]
-                    ## version for one hot representation, comment out if using intersection/dot
-                    # # Extract lists from the indth index of each vector
-                    # lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
-                    #
-                    # # Flatten the lists and count occurrences of each value
-                    # flattened_list = [item for sublist in lists_at_ind_index for item in sublist]
-                    # value_counts = Counter(flattened_list)
-                    #
-                    # # Find values that appear in at least 50% of the lists
-                    # threshold = len(cluster) / 2
-                    # most_common_values = [value for value, count in value_counts.items() if count >= threshold]
+                    # avg_length = self._hyper_parameters["avg_list_len"][ind]
+                    # new_lists = [sublist[ind][:avg_length] + [1] * (avg_length - len(sublist[ind])) if len(sublist[ind]) < avg_length else sublist[ind][:avg_length] for sublist in cluster]
+                    # most_common_values = [sum(item[i] for item in new_lists) / len(new_lists) for i in
+                    #             range(len(new_lists[0]))]
 
-                    frequent_value_list.append(averages)
+                    # # version for one hot representation, comment out if using intersection/dot
+
+                    # Extract lists from the indth index of each vector
+
+                    lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
+
+
+                    # Flatten the lists and count occurrences of each value
+                    flattened_list = [item for sublist in lists_at_ind_index for item in sublist]
+                    value_counts = Counter(flattened_list)
+
+                    # Find values that appear in at least 50% of the lists
+                    threshold = len(cluster) / 2
+                    most_common_values = [value for value, count in value_counts.items() if count >= threshold]
+                    most_common_values = '[' + ', '.join(repr(item) for item in most_common_values) + ']'
+
+
+
+                    frequent_value_list.append(most_common_values)
 
             centroid = frequent_value_list
             # exit()
@@ -140,12 +146,12 @@ class KMeansClusterer_talentai:
         return self._means
 
     def get_wcss(self):
-        if self._wcss is None:
-            self.wcssCalculate()
-        print("wcss unnormalized is:", self._wcss)
-
-        normalize_wcss = (self._wcss - self.min_dist) / (self.max_dist - self.min_dist)
-        print("wcss normalized is:", normalize_wcss)
+        self.wcssCalculate()
+        print("wcss is:", self._wcss)
+        # print("wcss unnormalized is:", self._wcss)
+        #
+        # normalize_wcss = (self._wcss - self.min_dist) / (self.max_dist - self.min_dist)
+        # print("wcss normalized is:", normalize_wcss)
 
         return self._wcss
 
@@ -153,20 +159,24 @@ class KMeansClusterer_talentai:
         distance = 0
         num_pairs = 0
         # print(self._means)
-
+        max_val=0
+        min_val=999999999999
+        dists=[]
         for i in range(len(self._means)):
             for j in range(i + 1, len(self._means)):
                 d = self._distance(self._means[i], self._means[j], self._type_of_fields,
                                    self._hyper_parameters)
-                distance += d[0]
-
+                max_val=max(d[0], max_val)
+                min_val=min(min_val,d[0])
+                #distance += d[0]
+                dists.append(d[0])
                 num_pairs += 1
 
-        distance = distance / num_pairs
-        self.average_dist_between_clusters = distance
-        print("the average distance (unnormalized) is:", self.average_dist_between_clusters)
-        normalized_dist = (self.average_dist_between_clusters - self.min_dist) / (self.max_dist - self.min_dist)
-        print("normalized average distance is:", normalized_dist)
+        normalized_dists = [(x - min_val) / (max_val - min_val) for x in dists]
+        average_normalized = sum(normalized_dists) / len(normalized_dists)
+
+        self.average_dist_between_clusters = average_normalized
+        print("average distance between clusters is: ", average_normalized)
 
     def calc_min_max_dist(self, vecs):
         print("calc min and max distances for normalization")
@@ -185,11 +195,23 @@ class KMeansClusterer_talentai:
     def wcssCalculate(self):
         # for i in
         wcss = 0
+
+        # find all distances:
+        min_val=9999999999999999999999999
+        max_val=0
+        for i in range(len(self._clusters_info)):
+            for vec in self._clusters_info[i]:
+                dist, res= self._distance(list(vec), self._means[i], self._type_of_fields,
+                                                   self._hyper_parameters)
+                max_val=max(dist,max_val)
+                min_val=min(dist,min_val)
+
+
         for i in range(len(self._clusters_info)):
             for vec in self._clusters_info[i]:
                 distance, results = self._distance(list(vec), self._means[i], self._type_of_fields,
                                                    self._hyper_parameters)
-                wcss += distance ** 2
+                wcss += ((distance-min_val)/(max_val-min_val)) ** 2
         self._wcss = wcss
 
     def get_Silhouette(self):
@@ -349,6 +371,7 @@ class KMeansClusterer_talentai:
 
                 for vector in vectors:
                     index, distances = self.classify_vectorspace(vector)
+                    clusters[index].append(vector) #clusters[index].append(vector.tolist())
 
                 try:
                     new_means = list(map(self._centroid, clusters, self._means))

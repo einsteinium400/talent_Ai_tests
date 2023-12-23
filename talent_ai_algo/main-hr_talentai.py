@@ -7,6 +7,7 @@ from avivit_res_talentai.talent_ai_algo.talentai_dot_product import Statistic_do
 from avivit_res_talentai.talent_ai_algo.Statistic_intersection_talentai import Statistic_intersection
 from avivit_res_talentai.talent_ai_algo.Statistic_list_frequency_talentai import Statistic_list_frequency
 from avivit_res_talentai.talent_ai_algo.KMeanClusterer_talentai_version import KMeansClusterer_talentai
+from avivit_res_talentai.talent_ai_algo.talentai_dot_product import Statistic_dot_product
 # Save the reference to the original sys.stdout
 original_stdout = sys.stdout
 
@@ -35,6 +36,53 @@ types_list = ['categoric', 'categoric', 'categoric', 'categoric', 'numeric',
 
 i = 0
 
+with open('../datasets/employes_flat_version_Slin.csv', 'r', encoding='utf-8') as csvfile:  # employes.csv
+    # Create a CSV reader object
+    csv_data = []
+    csvreader = csv.reader(csvfile)
+
+    for row in csvreader:
+        csv_data.append(row)
+
+vectors = [np.array(f, dtype=object) for f in csv_data]
+hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
+
+# make categoric vals as numeric freqs
+for vec in vectors:
+    for i in range(len(types_list)):
+        if (types_list[i]=="categoric"):
+
+            vec[i]=hp["frequencies"][str(i)][vec[i]]
+
+        # # #TODO: this if should be commented out if using one hot vector methods
+        # if (types_list[i]=="list"):
+        #     new_lst=[]
+        #     old_lst=ast.literal_eval(vec[i])
+        #     new_lst=[]
+        #     for j in old_lst:
+        #         new_lst.append(hp["list_freq_dict"][i][j])
+        #     vec[i]=new_lst
+
+vectors = [array.tolist() for array in vectors]
+
+
+print("####################3making model of intersection")
+model = KMeansClusterer_talentai(num_means=k,
+                        distance=Statistic_intersection,
+                        repeats=6,
+                        type_of_fields=types_list,
+                        hyper_params=hp)
+
+model.cluster_vectorspace(vectors)
+
+print("done making model")
+
+# model.calc_min_max_dist(vectors)
+model.get_wcss()
+model.calc_distance_between_clusters()
+
+##################################################################3
+
 with open('../datasets/employes_flat_version.csv', 'r', encoding='utf-8') as csvfile:  # employes.csv
     # Create a CSV reader object
     csv_data = []
@@ -53,52 +101,21 @@ vectors = [np.array(f, dtype=object) for f in csv_data]
 #vectors=convert_month_year_to_year(vectors)
 
 
-hp, k = preProcess(vectors, types_list, Statistic_list_frequency, 9, 9)
+hp, k = preProcess(vectors, types_list, Statistic_dot_product, 9, 9)
 
 # make categoric vals as numeric freqs
 for vec in vectors:
     for i in range(len(types_list)):
         if (types_list[i]=="categoric"):
-
             vec[i]=hp["frequencies"][str(i)][vec[i]]
-        # this if should be commented out if using one hot vector methods
-        if (types_list[i]=="list"):
-            new_lst=[]
-            old_lst=ast.literal_eval(vec[i])
-            new_lst=[]
-            for j in old_lst:
-                new_lst.append(hp["list_freq_dict"][i][j])
-            vec[i]=new_lst
 
 vectors = [array.tolist() for array in vectors]
 
 
-print("making model of intersection")
+print("######################making model of dot product")
 model = KMeansClusterer_talentai(num_means=k,
-                        distance=Statistic_list_frequency,
-                        repeats=20,
-                        type_of_fields=types_list,
-                        hyper_params=hp)
-
-model.cluster_vectorspace(vectors)
-
-print("done making model")
-
-model.calc_min_max_dist(vectors)
-model.get_wcss()
-model.calc_distance_between_clusters()
-print("min distance is", model.min_dist)
-print("max distance is", model.max_dist)
-
-exit()
-##################################################################3
-
-print("######################3making model of dot product")
-
-hp, k = preProcess(vectors, types_list, Statistic_dot_product, 9, 9)
-model = KMeansClusterer(num_means=k,
                         distance=Statistic_dot_product,
-                        repeats=20,
+                        repeats=6,
                         type_of_fields=types_list,
                         hyper_params=hp)
 
@@ -106,11 +123,11 @@ model.cluster_vectorspace(vectors)
 
 print("done making model")
 
-model.calc_min_max_dist(vectors)
-print("min distance is", model.min_dist)
-print("max distance is", model.max_dist)
+# model.calc_min_max_dist(vectors)
 model.get_wcss()
 model.calc_distance_between_clusters()
 
-exit()
 ##########################################################3
+
+
+

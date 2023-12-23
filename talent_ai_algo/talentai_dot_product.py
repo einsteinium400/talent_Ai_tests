@@ -80,10 +80,18 @@ def Statistic_dot_product(u, v, type_values, parameters):
 
         if type_values[i] == "list":
             # create one hot vector
-
-            u_list = ast.literal_eval(u[i])
-            v_list = ast.literal_eval(v[i])
-
+            try:
+                u_list = ast.literal_eval(u[i])
+                v_list = ast.literal_eval(v[i])
+            except:
+                print("FAILED ON DOT PROD")
+                print(u[i])
+                print(type(u[i]))
+                print(v[i])
+                print(type(v[i]))
+                u_list=[]
+                v_list=[]
+                #exit()
             ##### dot product
 
             one_hot_vec_u = [1 if word in u_list else 0 for word in parameters["one_hot_vector_prep"][i]]

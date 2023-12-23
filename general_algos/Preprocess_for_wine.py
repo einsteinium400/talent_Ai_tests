@@ -87,6 +87,7 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
     params_dict["one_hot_vector_prep"] = dict_of_lists
     df = pd.DataFrame(vectors)
     domain_sizes = df.nunique()
+    print(domain_sizes)
 
 
     params_dict["domain sizes"] = domain_sizes.tolist()

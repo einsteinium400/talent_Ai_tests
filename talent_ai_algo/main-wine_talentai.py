@@ -8,6 +8,7 @@ from avivit_res_talentai.talent_ai_algo.talentai_dot_product import Statistic_do
 from avivit_res_talentai.talent_ai_algo.Statistic_intersection_talentai import Statistic_intersection
 from avivit_res_talentai.talent_ai_algo.Statistic_list_frequency_talentai import Statistic_list_frequency
 from avivit_res_talentai.talent_ai_algo.KMeanClusterer_talentai_version import KMeansClusterer_talentai
+
 # Save the reference to the original sys.stdout
 original_stdout = sys.stdout
 
@@ -24,8 +25,6 @@ output_file = open(output_file_path, 'w')
 import numpy as np
 import re
 
-
-
 types_list = ['categoric', 'categoric', 'categoric', 'categoric', 'list',
               'list', 'numeric', 'categoric', 'categoric', 'categoric',
               'categoric', 'categoric', 'categoric',
@@ -41,50 +40,45 @@ with open('../datasets/wine.txt', 'r', encoding='utf-8') as csvfile:
     # Iterate through each row in the CSV file
 
     for row in csvreader:
-
         csv_data.append(row)
 
 vectors = [np.array(f, dtype=object) for f in csv_data]
 
-
-hp, k = preProcess(vectors, types_list, Statistic_list_frequency, 9, 9)
+hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
 
 # make list vals as numeric freqs
 for vec in vectors:
     for i in range(len(types_list)):
-        if (types_list[i]=="categoric"):
+        if (types_list[i] == "categoric"):
+            vec[i] = hp["frequencies"][str(i)][vec[i]]
+        # #TODO: this if should be comment for one hot vector methods
+        # if (types_list[i]=="list"):
+        #     old_lst=ast.literal_eval(vec[i])
+        #     new_lst=[]
+        #     for j in old_lst:
+        #         #print(hp["list_freq_dict"][i][j])
+        #         new_lst.append(hp["list_freq_dict"][i][j])
+        #     vec[i]=new_lst
 
-            vec[i]=hp["frequencies"][str(i)][vec[i]]
-        # this if should be comment for one hot vector methods
-        if (types_list[i]=="list"):
-            old_lst=ast.literal_eval(vec[i])
-            new_lst=[]
-            for j in old_lst:
-                #print(hp["list_freq_dict"][i][j])
-                new_lst.append(hp["list_freq_dict"][i][j])
-            vec[i]=new_lst
-
-print(vectors)
 vectors = [array.tolist() for array in vectors]
 
 print("making model of intersection")
 model = KMeansClusterer_talentai(num_means=k,
-                        distance=Statistic_list_frequency,
-                        repeats=20,
-                        type_of_fields=types_list,
-                        hyper_params=hp)
+                                 distance=Statistic_intersection,
+                                 repeats=13,
+                                 type_of_fields=types_list,
+                                 hyper_params=hp)
 
 model.cluster_vectorspace(vectors)
 
 print("done making model")
 
-model.calc_min_max_dist(vectors)
+# model.calc_min_max_dist(vectors)
 model.get_wcss()
 model.calc_distance_between_clusters()
-print("min distance is", model.min_dist)
-print("max distance is", model.max_dist)
+exit()
 
-##################################################################3
+#############################################################3
 
 print("######################3making model of dot product")
 
@@ -94,7 +88,6 @@ model = KMeansClusterer(num_means=k,
                         repeats=15,
                         type_of_fields=types_list,
                         hyper_params=hp)
-
 
 model.cluster_vectorspace(vectors)
 

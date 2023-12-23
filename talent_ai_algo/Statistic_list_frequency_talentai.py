@@ -73,7 +73,7 @@ def Statistic_list_frequency(u, v, type_values, parameters):
 
 
             #  adapt according to average list length
-            if (len(u_list) < parameters["avg_list_len"][i]):
+            if len(u_list) < parameters["avg_list_len"][i]:
                 u_list.extend([1] * (parameters["avg_list_len"][i] - len(u_list)))
 
             if len(u_list) > parameters["avg_list_len"][i]:

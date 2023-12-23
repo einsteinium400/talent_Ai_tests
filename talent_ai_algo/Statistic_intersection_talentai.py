@@ -5,7 +5,6 @@ import math
 
 
 def Statistic_intersection(u, v, type_values, parameters):
-
     distance = 0
     results = []
 
@@ -33,7 +32,6 @@ def Statistic_intersection(u, v, type_values, parameters):
     theta = parameters["theta"]
     gamma = parameters["gamma"]
 
-
     for i in range(len(v)):
 
         # catrgorical handle
@@ -57,7 +55,6 @@ def Statistic_intersection(u, v, type_values, parameters):
             print("v is", v)
             print("i is", i)
             print("type values is", type_values, len(type_values))
-
 
         # numberic handle
         if type_values[i] == "numeric":
@@ -83,14 +80,11 @@ def Statistic_intersection(u, v, type_values, parameters):
             one_hot_vec_u = [1 if word in u_list else 0 for word in parameters["one_hot_vector_prep"][i]]
             one_hot_vec_v = [1 if word in v_list else 0 for word in parameters["one_hot_vector_prep"][i]]
 
-
             # Calculate the intersection using element-wise AND
             intersection = [a & b for a, b in zip(one_hot_vec_u, one_hot_vec_v)]
             union = calculate_union(one_hot_vec_u, one_hot_vec_v)
 
             distance += 1 if sum(union) == 0 else 1 - sum(intersection) / sum(union)
-
-
 
     distance = math.sqrt(distance)
     # print("ended statistic")
