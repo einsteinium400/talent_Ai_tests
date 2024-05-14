@@ -10,7 +10,7 @@ import model.utils as utils
 from collections import Counter
 from sklearn.metrics import silhouette_score
 
-MAX_ITERATION = 40
+MAX_ITERATION = 30
 
 
 def custom_sort(obj, frequencies):

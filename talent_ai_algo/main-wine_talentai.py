@@ -70,7 +70,7 @@ print(vectors)
 print("making model of intersection")
 model = KMeansClusterer_talentai(num_means=k,
                                  distance=Statistic_intersection,
-                                 repeats=10,
+                                 repeats=8,
                                  type_of_fields=types_list,
                                  hyper_params=hp)
 
