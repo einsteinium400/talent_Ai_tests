@@ -50,7 +50,11 @@ hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
 for vec in vectors:
     for i in range(len(types_list)):
         if (types_list[i] == "categoric"):
-            vec[i] = hp["frequencies"][str(i)][vec[i]]
+            if (vec[i])!="":
+                vec[i] = hp["frequencies"][str(i)][vec[i]]
+            else:
+                print("fff")
+                vec[i]=1
         # #TODO: this if should be comment for one hot vector methods
         # if (types_list[i]=="list"):
         #     old_lst=ast.literal_eval(vec[i])
@@ -61,11 +65,12 @@ for vec in vectors:
         #     vec[i]=new_lst
 
 vectors = [array.tolist() for array in vectors]
+print(vectors)
 
 print("making model of intersection")
 model = KMeansClusterer_talentai(num_means=k,
                                  distance=Statistic_intersection,
-                                 repeats=13,
+                                 repeats=10,
                                  type_of_fields=types_list,
                                  hyper_params=hp)
 

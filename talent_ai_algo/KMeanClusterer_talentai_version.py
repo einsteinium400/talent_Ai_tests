@@ -1,4 +1,5 @@
 import ast
+import sys
 
 REPEATS_NUM = 5
 
@@ -6,11 +7,17 @@ import json
 # import traceback
 import numpy as np
 import math
-import model.utils as utils
+sys.path.append("..")  # Add parent directory to path
+import utils as utils
 from collections import Counter
 from sklearn.metrics import silhouette_score
 
-MAX_ITERATION = 25
+MAX_ITERATION = 30
+
+def average_of_lists(list_of_lists):
+    return [sum(val for val in col if val != "missing_val") / sum(1 for val in col if val != "missing_val")
+            if any(val != "missing_val" for val in col) else "missing_val"
+            for col in zip(*list_of_lists)]
 
 
 class KMeansClusterer_talentai:
@@ -95,8 +102,8 @@ class KMeansClusterer_talentai:
             for ind in range(len(cluster[0])):
 
                 if self._type_of_fields[ind] == "categoric":
-                    values = [float(arr[ind]) for arr in cluster if arr[ind] != '']
 
+                    values = [float(arr[ind]) for arr in cluster if arr[ind] != '']
                     result = np.mean(values) if len(values) > 0 else 0
                     frequent_value_list.append(np.mean(result))
 
@@ -108,28 +115,32 @@ class KMeansClusterer_talentai:
 
                 if self._type_of_fields[ind] == "list":
                     ## version for list frequency!!! comment this is using one hot vector
-
                     # avg_length = self._hyper_parameters["avg_list_len"][ind]
-                    # new_lists = [sublist[ind][:avg_length] + [1] * (avg_length - len(sublist[ind])) if len(sublist[ind]) < avg_length else sublist[ind][:avg_length] for sublist in cluster]
-                    # most_common_values = [sum(item[i] for item in new_lists) / len(new_lists) for i in
-                    #             range(len(new_lists[0]))]
+                    # lists_at_ind_index = [vector[ind] for vector in cluster]
+                    # sorted_lists = [sorted(sublist, reverse=True) for sublist in lists_at_ind_index]
+                    # # extend or shorten
+                    # for lst in sorted_lists:
+                    #     list_len = len(lst)
+                    #     if list_len > avg_length:
+                    #         lst[:] = lst[:avg_length]  # Shorten the list
+                    #     elif list_len < avg_length:
+                    #         lst.extend(["missing_val"] * (avg_length - list_len))  # Extend the list
+                    #
 
-                    # # version for one hot representation, comment out if using intersection/dot
+                    # todo: missing values dont participate in determing the mean- done!
+                   # most_common_values=average_of_lists(sorted_lists)
+                    #version for one hot representation, comment out if using intersection/dot
+                    #Extract lists from the indth index of each vector
 
-                    # Extract lists from the indth index of each vector
 
                     lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
-
-
                     # Flatten the lists and count occurrences of each value
                     flattened_list = [item for sublist in lists_at_ind_index for item in sublist]
                     value_counts = Counter(flattened_list)
-
                     # Find values that appear in at least 50% of the lists
                     threshold = len(cluster) / 2
                     most_common_values = [value for value, count in value_counts.items() if count >= threshold]
                     most_common_values = '[' + ', '.join(repr(item) for item in most_common_values) + ']'
-
 
 
                     frequent_value_list.append(most_common_values)
@@ -290,8 +301,10 @@ class KMeansClusterer_talentai:
 
     def _sum_distances(self, vectors1, vectors2):
         difference = 0.0
+
         for u, v in zip(vectors1, vectors2):
             distance, results = self._distance(u, v, self._type_of_fields, self._hyper_parameters)
+
             difference += distance
         return difference
 
@@ -314,9 +327,8 @@ class KMeansClusterer_talentai:
                     i += 1
                     print("succeed once", i, "out of", self._repeats)
                 except Exception as e:
-                    print(e)
+                    print("error occured",sys.exc_info()[-1].tb_lineno, ":", e)
                     # print("hello")
-                    #exit()
                     print("problem generating, trying again")
                     #  exit() #nooo
                     self._means = utils.mean_generator(self._num_means, vectors)
@@ -374,11 +386,13 @@ class KMeansClusterer_talentai:
                     clusters[index].append(vector) #clusters[index].append(vector.tolist())
 
                 try:
+
                     new_means = list(map(self._centroid, clusters, self._means))
+
                 # print("new means:", new_means)
                 except Exception as e:
                     # Propagate the exception from function c to function a
-                    print("fuck", e)
+                    print("An error occurred on line", sys.exc_info()[-1].tb_lineno, ":", e)
                     raise e
                 # print("new means are:", new_means)
                 # recalculate cluster means by computing the centroid of each cluster
@@ -388,7 +402,6 @@ class KMeansClusterer_talentai:
                 difference = self._sum_distances(self._means, new_means)
                 # remember the new means
                 self._means = new_means
-
                 if difference < self._max_difference or current_iteration == MAX_ITERATION:
                     converged = True
 

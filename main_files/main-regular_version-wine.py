@@ -41,25 +41,23 @@ print("done rows")
 vectors = [np.array(f, dtype=object) for f in csv_data]
 
 hp, k = preProcess(vectors, types_list,Statistic_dot_product , 9, 9)
+
  # need to comment out the part that refers to one hot vec in kmeansclusterer
 print("making model of Statistic_dotproduct")
 model = KMeansClusterer(num_means=k,
-                        distance=Statistic_dot_product,
-                        repeats=20,
+                        distance=Statistic_intersection,
+                        repeats=10,
                         type_of_fields=types_list,
                         hyper_params=hp)
-
 
 
 model.cluster_vectorspace(vectors)
 
 print("done making model")
 
-model.calc_min_max_dist(vectors)
 model.get_wcss()
 model.calc_distance_between_clusters()
-print("min distance is", model.min_dist)
-print("max distance is", model.max_dist)
+exit()
 
 #######################################3
 

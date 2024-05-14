@@ -36,7 +36,7 @@ types_list = ['categoric', 'categoric', 'categoric', 'categoric', 'numeric',
 
 i = 0
 
-with open('../datasets/employes_flat_version_Slin.csv', 'r', encoding='utf-8') as csvfile:  # employes.csv
+with open('../datasets/employes_flat_version.csv', 'r', encoding='utf-8') as csvfile:  # employes.csv
     # Create a CSV reader object
     csv_data = []
     csvreader = csv.reader(csvfile)
@@ -51,10 +51,11 @@ hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
 for vec in vectors:
     for i in range(len(types_list)):
         if (types_list[i]=="categoric"):
-
-            vec[i]=hp["frequencies"][str(i)][vec[i]]
-
-        # # #TODO: this if should be commented out if using one hot vector methods
+            if (vec[i])!="":
+                vec[i] = hp["frequencies"][str(i)][vec[i]]
+            else:
+                vec[i]=1
+        # # #TODO: these lines are only for list frequency
         # if (types_list[i]=="list"):
         #     new_lst=[]
         #     old_lst=ast.literal_eval(vec[i])
@@ -69,7 +70,7 @@ vectors = [array.tolist() for array in vectors]
 print("####################3making model of intersection")
 model = KMeansClusterer_talentai(num_means=k,
                         distance=Statistic_intersection,
-                        repeats=6,
+                        repeats=8,
                         type_of_fields=types_list,
                         hyper_params=hp)
 
@@ -80,6 +81,7 @@ print("done making model")
 # model.calc_min_max_dist(vectors)
 model.get_wcss()
 model.calc_distance_between_clusters()
+exit()
 
 ##################################################################3
 
@@ -115,7 +117,7 @@ vectors = [array.tolist() for array in vectors]
 print("######################making model of dot product")
 model = KMeansClusterer_talentai(num_means=k,
                         distance=Statistic_dot_product,
-                        repeats=6,
+                        repeats=5,
                         type_of_fields=types_list,
                         hyper_params=hp)
 

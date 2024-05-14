@@ -47,36 +47,39 @@ with open('../datasets/employes_flat_version.csv', 'r', encoding='utf-8') as csv
         csv_data.append(row)
 
 vectors = [np.array(f, dtype=object) for f in csv_data]
+print("hi")
 
-
-hp, k = preProcess(vectors, types_list, MixedDistance, 9, 9)
+hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
 # in order to run this you need to comment out the part that refers to one hot vector in kmeansclusterer
 
 print("making model of dot")
 model = KMeansClusterer(num_means=k,
-                        distance=MixedDistance,
-                        repeats=6,
+                        distance=Statistic_intersection,
+                        repeats=8,
                         type_of_fields=types_list,
                         hyper_params=hp)
+
+# print(hp["list_freq_dict"])
 
 model.cluster_vectorspace(vectors)
 
 print("done making model")
 
-#model.calc_min_max_dist(vectors)
+# model.calc_min_max_dist(vectors)
 model.get_wcss()
 model.calc_distance_between_clusters()
+exit()
 
-##################################################################3
+##################################################################
 
 print("######################3making model of Statistic_intersection ")
-hp, k = preProcess(vectors, types_list, Statistic_list_frequency, 9, 9)
+hp, k = preProcess(vectors, types_list, Statistic_intersection, 9, 9)
 model = KMeansClusterer(num_means=k,
-                        distance=Statistic_list_frequency,
-                        repeats=6,
+                        distance=Statistic_intersection,
+                        repeats=5,
                         type_of_fields=types_list,
                         hyper_params=hp)
-
+print(hp["frequencies"])
 model.cluster_vectorspace(vectors)
 
 print("done making model")

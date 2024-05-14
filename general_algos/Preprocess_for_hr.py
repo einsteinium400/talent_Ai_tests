@@ -137,6 +137,7 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
             freq_dict[i] = defaultdict(int)
             for vec in range(len(vectors)):
                 for elem in ast.literal_eval(vectors[vec][i]):
+                    # todo: freq is 1 is "".
                     freq_dict[i][elem] += 1
     params_dict["list_freq_dict"] = freq_dict
 

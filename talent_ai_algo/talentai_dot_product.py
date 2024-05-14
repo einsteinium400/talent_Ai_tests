@@ -41,19 +41,20 @@ def Statistic_dot_product(u, v, type_values, parameters):
         # catrgorical handle
         try:
             if type_values[i] == "categoric":
-                # if attributes are same
-                if float(u[i]) == float(v[i]):
-                    results.append(0)
-                # attributes are not the same - calculate max{f(|vak|), dfr(vi, ui), theta)
-                else:
-                    specific_domain_size = parameters["domain sizes"][i]
-                    f_v_ak = f_freq(specific_domain_size, theta1, betha, theta2, gamma)
-                    fr_u = float(u[i])#parameters["frequencies"][str(i)][str((u[i]))] if u[i]!="" else 1
-                    fr_v = float(v[i])#parameters["frequencies"][str(i)][str((v[i]))] if v[i]!="" else 1
-                    m_fk = parameters["minimum_freq_of_each_attribute"][str(i)]
-                    d_fr = (abs(fr_u - fr_v) + m_fk) / max(fr_u, fr_v)
-                    results.append(abs(max(d_fr, theta, f_v_ak)))
-                    distance += pow(max(d_fr, theta, f_v_ak), 2)
+                if (u[i] != "" and v[i]!=""):
+                    # if attributes are same
+                    if float(u[i]) == float(v[i]):
+                        results.append(0)
+                    # attributes are not the same - calculate max{f(|vak|), dfr(vi, ui), theta)
+                    else:
+                        specific_domain_size = parameters["domain sizes"][i]
+                        f_v_ak = f_freq(specific_domain_size, theta1, betha, theta2, gamma)
+                        fr_u = float(u[i])#parameters["frequencies"][str(i)][str((u[i]))] if u[i]!="" else 1
+                        fr_v = float(v[i])#parameters["frequencies"][str(i)][str((v[i]))] if v[i]!="" else 1
+                        m_fk = parameters["minimum_freq_of_each_attribute"][str(i)]
+                        d_fr = (abs(fr_u - fr_v) + m_fk) / max(fr_u, fr_v)
+                        results.append(abs(max(d_fr, theta, f_v_ak)))
+                        distance += pow(max(d_fr, theta, f_v_ak), 2)
         except Exception as e:
             print("error!!!!!", e)
             print("v is", v)
@@ -68,8 +69,26 @@ def Statistic_dot_product(u, v, type_values, parameters):
         if type_values[i] == "numeric":
             try:
                 if u[i] != '' and v[i] != '':
-                    results.append(abs(np.float64(u[i]) - np.float64(v[i])))
-                    distance += pow(np.float64(u[i]) - np.float64(v[i]), 2)
+                    # normalization for wine
+                    # u_val = (float(u[i]) - 4) / (48 - 4)
+                    # v_val = (float(v[i]) - 4) / (48 - 4)
+
+                    # normalization for hr
+
+                    if i == 4:
+                        u_val = (float(u[i]) - 1913) / (1997 - 1913)
+                        v_val = (float(v[i]) - 1913) / (1997 - 1913)
+
+                    if i == 19:
+                        u_val = (float(u[i]) - 1666) / (2020 - 1666)
+                        v_val = (float(v[i]) - 1666) / (2020 - 1666)
+
+                    if i == 34:
+                        v_val = (float(v[i]) - 3.11) / (5 - 3.11)
+                        u_val = (float(u[i]) - 3.11) / (5 - 3.11)
+
+                    val = (u_val - v_val) ** 2
+                    distance += val
 
             except Exception as e:
                 print(e)

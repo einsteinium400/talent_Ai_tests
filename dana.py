@@ -1,12 +1,10 @@
-# Your list of lists
-original_list = [
-    [1, 2, 3, 4, 5, 6, [7, 8, 9, 10]],
-    [2, 3, 4, 5, 6, 7, [8, 9]],
-    [3, 4, 5, 6, 7, 8, [9, 10]],
-]
+def average_of_lists(list_of_lists):
+    return [sum(val for val in col if val != "missing_val") / sum(1 for val in col if val != "missing_val")
+            if any(val != "missing_val" for val in col) else "missing_val"
+            for col in zip(*list_of_lists)]
 
-# Process the 7th index in each sublist and extract them as standalone lists
-processed_list = [sublist[6][:4] + [1] * (4 - len(sublist[6])) if len(sublist[6]) < 4 else sublist[6][:4] for sublist in original_list]
-averages = [sum(item[i] for item in processed_list) / len(processed_list) for i in range(len(processed_list[0]))]
+# Example usage:
+data = [[1, 3, 4], [3, 5, "missing_val"],["missing_val", 2, "missing_val"]]
 
-print("Processed List:", averages)
+avg_lst = average_of_lists(data)
+print(avg_lst)  # Output: [2, 4, 4]

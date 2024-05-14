@@ -10,7 +10,15 @@ import model.utils as utils
 from collections import Counter
 from sklearn.metrics import silhouette_score
 
-MAX_ITERATION = 25
+MAX_ITERATION = 40
+
+
+def custom_sort(obj, frequencies):
+    # If the object is "missing_val," return a tuple with a large frequency value
+    if obj == "missing_val":
+        return (float('inf'),)
+    # Otherwise, return a tuple with the negative frequency value
+    return (-frequencies.get(obj, 0),)
 
 
 class KMeansClusterer:
@@ -32,7 +40,7 @@ class KMeansClusterer:
         self._mean_values = mean_values
         self._type_of_fields = type_of_fields
         self._means = None
-        ##NOAM LINES FOR ANOMALIES
+        ## LINES FOR ANOMALIES
         self.clustersAverageDistance = None
         self.clustersStdDev = None
         self.clustersMaxDistances = None
@@ -97,42 +105,114 @@ class KMeansClusterer:
                 # if type if categorical, take the most frequent value.
                 # if type is numerical, make avg
                 if self._type_of_fields[ind] == "categoric":
+                    # todo: if the most frequent value is "", then choose the second next. if all are missing val, chose missing val. done
                     counter = Counter(arr[ind] for arr in cluster if len(arr) > ind)
-                    frequent_value_list.append(counter.most_common(1)[0][0])
+                    most_common = counter.most_common(2)
+                    frequent_value_list.append(
+                        most_common[1][0] if most_common[0][0] == "" and len(most_common) > 1 else most_common[0][0] if
+                        most_common[0][0] != "" else "")
+                    # counter = Counter(arr[ind] for arr in cluster if len(arr) > ind)
+                    # frequent_value_list.append(counter.most_common(1)[0][0])
 
                 if self._type_of_fields[ind] == "numeric":
                     # ignore missing values
                     values = [float(arr[ind]) for arr in cluster if arr[ind] != '']
-
-                    result = np.mean(values) if len(values)>0 else 0
+                    result = np.mean(values) if len(values) > 0 else 0
                     frequent_value_list.append(np.mean(result))
 
                 if self._type_of_fields[ind] == "list":
 
-                    # # this version is for dot product and intersection
-                    # # Extract lists from the indth index of each vector
+                    ############### this version is for hamming talentai method
+
                     # lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
                     #
-                    # # Flatten the lists and count occurrences of each value
-                    # flattened_list = [item for sublist in lists_at_ind_index for item in sublist]
-                    # value_counts = Counter(flattened_list)
+                    # # this line is only for hamming sorted
+                    # lists_at_ind_index = [sorted(sublist, key=lambda x: self._hyper_parameters["list_freq_dict"][ind].get(x, 0), reverse=True) for sublist
+                    #                      in lists_at_ind_index]
                     #
-                    # # Find values that appear in at least 50% of the lists
-                    # threshold = len(cluster) / 2
-                    # most_common_values = [value for value, count in value_counts.items() if count >= threshold]
+                    # padded_data = [lst + ['missing_val'] * (self._hyper_parameters["avg_list_len"][ind] - len(lst)) for
+                    #                lst in lists_at_ind_index]
+                    #
+                    #
+                    # transposed_data = zip(*padded_data)
+                    # # Initialize the voting list
+                    # voting_list = []
+                    # # Iterate over each column
+                    # for column in transposed_data:
+                    #     # Count occurrences of each value in the column
+                    #     counts = Counter(column)
+                    #     # Find the most common values
+                    #     most_common_values = counts.most_common(2)
+                    #
+                    #     # Check if the most common value is "missing_val"
+                    #     if most_common_values[0][0] == "missing_val":
+                    #         if len(most_common_values) >= 2:
+                    #             most_common_value = most_common_values[1][0]
+                    #         else:
+                    #             most_common_value = "missing_val"
+                    #     else:
+                    #         most_common_value = most_common_values[0][0]
+                    #
+                    #     # todo: most common value needs to be a real value, exclude missing vals - done!
+                    #     # Append the most common value to the voting list
+                    #     voting_list.append(most_common_value)
+                    # data = voting_list
 
-                    # this version is for list frequency
 
-                    avg_length = self._hyper_parameters["avg_list_len"][ind]
-                    lists_at_second_index = [ast.literal_eval(vector[ind]) for vector in cluster]
-                    all_values = [value for sublist in lists_at_second_index for value in sublist]
-                    counter = Counter(all_values)
-                    most_common_values = [value for value, count in counter.most_common(avg_length)]
+                    ############ this version is for dot product and intersection
+                  #  Extract lists from the indth index of each vector
 
-                    # add missing vals is for list frequenct version
-                    data = most_common_values  # + (["missing_val"] * (avg_length - len(most_common_values)))
+                    lists_at_ind_index = [ast.literal_eval(vector[ind]) for vector in cluster]
+
+                    # Flatten the lists and count occurrences of each value
+                    flattened_list = [item for sublist in lists_at_ind_index for item in sublist]
+                    value_counts = Counter(flattened_list)
+
+                    # Find values that appear in at least 50% of the lists
+                    threshold = len(cluster) / 2
+                    most_common_values = [value for value, count in value_counts.items() if count >= threshold]
+                    data = most_common_values
+
+                    ############## this version is for list frequency
+                    # avg_length = self._hyper_parameters["avg_list_len"][ind]
+                    # # extract lists
+                    # lists_at_index = [ast.literal_eval(vector[ind]) for vector in cluster]
+                    #
+                    # # sort all lists
+                    # lists_at_index = [sorted(sublist, key=lambda x: self._hyper_parameters["list_freq_dict"][ind].get(x, 0), reverse=True) for sublist
+                    #                    in lists_at_index]
+                    # # pad data
+                    #
+                    # padded_data = [lst + ['missing_val'] * (self._hyper_parameters["avg_list_len"][ind] - len(lst)) for lst in lists_at_index]
+                    # # voting
+                    #
+                    # transposed_data = zip(*padded_data)
+                    # # Initialize the voting list
+                    # voting_list = []
+                    # # Iterate over each column
+                    # for column in transposed_data:
+                    #     # Count occurrences of each value in the column
+                    #     counts = Counter(column)
+                    #     # Find the most common values
+                    #     most_common_values = counts.most_common(2)
+                    #
+                    #     # Check if the most common value is "missing_val"
+                    #     if most_common_values[0][0] == "missing_val":
+                    #         if len(most_common_values) >= 2:
+                    #             most_common_value = most_common_values[1][0]
+                    #         else:
+                    #             most_common_value = "missing_val"
+                    #     else:
+                    #         most_common_value = most_common_values[0][0]
+                    #
+                    #     # todo: most common value needs to be a real value, exclude missing vals - done!
+                    #     # Append the most common value to the voting list
+                    #     voting_list.append(most_common_value)
+                    # data = voting_list
+
+
+                    ## for every method keep these lines
                     str_list = '[' + ', '.join(repr(item) for item in data) + ']'
-
                     frequent_value_list.append(str_list)
 
             centroid = np.array(frequent_value_list)
@@ -187,11 +267,30 @@ class KMeansClusterer:
         print("max distance is", self.max_dist)
 
     def wcssCalculate(self):
-        # for i in
+        # wcss = 0
+        # distances = []
+        #
+        # # find all distances:
+        # for i in range(len(self._clusters_info)):
+        #     for vec in self._clusters_info[i]:
+        #         distance, _ = self._distance(list(vec), self._means[i], self._type_of_fields, self._hyper_parameters)
+        #         distances.append(distance)
+        #
+        # mean_val = np.mean(distances)
+        # std_dev = np.std(distances)
+        #
+        # for i in range(len(self._clusters_info)):
+        #     for vec in self._clusters_info[i]:
+        #         distance, _ = self._distance(list(vec), self._means[i], self._type_of_fields, self._hyper_parameters)
+        #         normalized_distance = (distance - mean_val) / std_dev if std_dev != 0 else 0
+        #         wcss += normalized_distance ** 2
+        #
+        # self._wcss = wcss
+
         wcss = 0
 
         # find all distances:
-        min_val = 9999999999999999999999999
+        min_val = 99999999999999999999
         max_val = 0
         for i in range(len(self._clusters_info)):
             for vec in self._clusters_info[i]:
@@ -309,7 +408,7 @@ class KMeansClusterer:
                 except Exception as e:
                     print(e)
                     # print("hello")
-                   # exit()
+                    # exit()
                     print("problem generating, trying again")
                     #  exit() #nooo
                     self._means = utils.mean_generator(self._num_means, vectors)
@@ -332,6 +431,7 @@ class KMeansClusterer:
                 self._wcss = wcsss[lowest_wcss]
                 self._means = meanss[lowest_wcss]
                 self._clusters_info = best_clusters
+
 
             elif self.repeats_method == "minimal_difference":
                 # find the set of means that's minimally different from the others
@@ -357,6 +457,7 @@ class KMeansClusterer:
             converged = False
             while not converged:
                 current_iteration += 1
+                #    print("current iteration: ", current_iteration)
                 # assign the tokens to clusters based on minimum distance to
                 # the cluster means
 

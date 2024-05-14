@@ -87,7 +87,6 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
     params_dict["one_hot_vector_prep"] = dict_of_lists
     df = pd.DataFrame(vectors)
     domain_sizes = df.nunique()
-    print(domain_sizes)
 
 
     params_dict["domain sizes"] = domain_sizes.tolist()
@@ -111,6 +110,7 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
             max_frequencies_dict[str(i)] = dict()
 
     params_dict["frequencies"] = frequencies_dict
+#    print(params_dict["frequencies"] )
     params_dict["minimum_freq_of_each_attribute"] = minimal_frequencies_dict
     params_dict["theta"] = 0.1
     #k = apply_elbow_method(type_of_fields, vectors, distance_function, triesNumber, repeats, params_dict)
@@ -151,4 +151,5 @@ def preProcess(vectors, fieldsData, distance_function, triesNumber, repeats):
     params_dict["betha"] = betha
     params_dict["gamma"] = gamma
     # print('done genetics: ', params_dict)
+    print(params_dict)
     return params_dict, k
