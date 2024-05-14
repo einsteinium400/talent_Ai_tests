@@ -7,8 +7,8 @@ import json
 # import traceback
 import numpy as np
 import math
-sys.path.append("..")  # Add parent directory to path
-import utils as utils
+#sys.path.append("..")  # Add parent directory to path
+from .. import utilss as ut
 from collections import Counter
 from sklearn.metrics import silhouette_score
 
@@ -320,7 +320,7 @@ class KMeansClusterer_talentai:
             #   print("kmeans cluster_vectorspace, doing repeats", trial)
             # generate new means
             try:
-                self._means = utils.mean_generator(self._num_means, vectors)
+                self._means = ut.mean_generator(self._num_means, vectors)
                 # cluster the vectors to the given means
                 try:
                     self._cluster_vectorspace(vectors)
@@ -331,7 +331,7 @@ class KMeansClusterer_talentai:
                     # print("hello")
                     print("problem generating, trying again")
                     #  exit() #nooo
-                    self._means = utils.mean_generator(self._num_means, vectors)
+                    self._means = ut.mean_generator(self._num_means, vectors)
                     continue
                 # add the new means each time
                 meanss.append(self._means)

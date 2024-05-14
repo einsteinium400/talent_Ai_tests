@@ -64,22 +64,22 @@ def Statistic_intersection(u, v, type_values, parameters):
             try:
                 if u[i] != '' and v[i] != '':
                     # normalization for wine
-                    # u_val = (float(u[i]) - 4) / (48 - 4)
-                    # v_val = (float(v[i]) - 4) / (48 - 4)
+                    u_val = (float(u[i]) - 4) / (48 - 4)
+                    v_val = (float(v[i]) - 4) / (48 - 4)
 
-                   # normalization for hr
+                  # normalization for hr
 
-                    if i == 4:
-                        u_val = (float(u[i]) - 1913) / (1997 - 1913)
-                        v_val = (float(v[i]) - 1913) / (1997 - 1913)
-
-                    if i == 19:
-                        u_val = (float(u[i]) - 1666) / (2020 - 1666)
-                        v_val = (float(v[i]) - 1666) / (2020 - 1666)
-
-                    if i == 34:
-                        v_val = (float(v[i]) - 3.11) / (5 - 3.11)
-                        u_val = (float(u[i]) - 3.11) / (5 - 3.11)
+                    # if i == 4:
+                    #     u_val = (float(u[i]) - 1913) / (1997 - 1913)
+                    #     v_val = (float(v[i]) - 1913) / (1997 - 1913)
+                    #
+                    # if i == 19:
+                    #     u_val = (float(u[i]) - 1666) / (2020 - 1666)
+                    #     v_val = (float(v[i]) - 1666) / (2020 - 1666)
+                    #
+                    # if i == 34:
+                    #     v_val = (float(v[i]) - 3.11) / (5 - 3.11)
+                    #     u_val = (float(u[i]) - 3.11) / (5 - 3.11)
 
                     val = (u_val - v_val) ** 2
                     distance += val

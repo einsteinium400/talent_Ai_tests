@@ -40,7 +40,7 @@ with open('../datasets/wine.txt', 'r', encoding='utf-8') as csvfile:  # employes
 print("done rows")
 vectors = [np.array(f, dtype=object) for f in csv_data]
 
-hp, k = preProcess(vectors, types_list,Statistic_dot_product , 9, 9)
+hp, k = preProcess(vectors, types_list,Statistic_intersection , 9, 9)
 
  # need to comment out the part that refers to one hot vec in kmeansclusterer
 print("making model of Statistic_dotproduct")
